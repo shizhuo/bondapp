@@ -9,6 +9,11 @@ try{
 }
  
 var casper = require('casper').create({
+		waitTimeout: 10000,
+		stepTimeout: 10000,
+		onStepTimeout: function(){
+			console.log('step time out'); 
+		},
     pageSettings: {
         webSecurityEnabled: false
     }
@@ -43,7 +48,8 @@ function process_discovery(casper){
 			v1 = v1.substring(10, v1.length-2);   
 			v = 'http://emma.msrb.org' + v1; 
 			rfs[j] = cusip + f + '.png'; 
-			casper.download(v, rfs[j]); 
+			casper.download(v, rfs[j]);
+			console.log(v + ' downloaded');  
 			should_ocr = should_ocr | (1 << j); 
 			if (childprocess){
 				childprocess.execFile('./gocr.sh', [rfs[j], f, j], null, function(err, stdout, stderr){
@@ -74,19 +80,41 @@ function process_discovery(casper){
 			//console.log('done'); 
 		}, function timeout(){
 			console.log('timeout'); 
-	}); 
+	}, 5000); 
 
 }
 
 function process_details(casper){
 	record.desc_1 = casper.getHTML('a.issueDataLink'); 
-	record.desc_2 = casper.getHTML('div.securityHeaderDiv :nth-child(2) span');
-	record.dated_date = casper.getHTML('div.securityHeaderDiv :nth-child(6) :nth-child(2)');
+	record.desc_2 = ''; 
+	try{
+		record.desc_2 = casper.getHTML('div.securityHeaderDiv span#ctl00_mainContentArea_securityHeaderLabelsUserControl1_secondLevelIssueDataLabel');
+	}catch(error){
+		//console.log(error); 
+	}
+	/*record.dated_date = casper.getHTML('div.securityHeaderDiv :nth-child(6) :nth-child(2)');
 	record.maturity_date = casper.getHTML('div.securityHeaderDiv :nth-child(8) :nth-child(2)'); 
 	record.interest_rate = casper.getHTML('div.securityHeaderDiv :nth-child(10) :nth-child(2)'); 
 	record.amount = casper.getHTML('div.securityHeaderDiv :nth-child(12) :nth-child(2)');
 	record.price = casper.getHTML('div.securityHeaderDiv :nth-child(14) :nth-child(2)');
-	record.issuer = casper.getHTML('a.fullName');   
+	record.issuer = casper.getHTML('a.fullName');*/
+
+	var fields = casper.getElementsInfo('div.securityHeaderDiv div.value span.label'); 	
+  var values = casper.getElementsInfo('div.securityHeaderDiv div.value span.label + span'); 
+
+	for (var i = 0; i < fields.length; i++){
+		if (fields[i].html.search('Dated Date')!=-1){
+			record.dated_date = values[i].html; 
+		}else if (fields[i].html.search('Maturity')!=-1){
+			record.maturity_date = values[i].html; 
+		}else if (fields[i].html.search('Interest Rate') != -1){
+			record.interest_rate = values[i].html; 
+		}else if (fields[i].html.search('Amount')!=-1){
+			record.amount = values[i].html; 
+		}else if (fields[i].html.search('Initial Offering Price/Yield')!=-1){
+			record.price = values[i].html;
+		}
+	}
 
 }
 
@@ -94,15 +122,21 @@ casper.start(detail_url, function() {
 		
 	//to accept the disclaimer; 
 	this.click('input#ctl00_mainContentArea_disclaimerContent_yesButton');
-	this.waitForText('Security Details', function(){
+	this.waitForText('Security Details', function then(){
+		console.log('to process details'); 
 		process_details(this); 
-	}); 
+	}, function timeout(){
+		console.log('wait for text timeout'); 
+	}, 10000); 
 });
 
 casper.thenOpen(discovery_url, function(){
-	this.waitForSelector('input#searchButton', function(){
+	this.waitForSelector('input#searchButton', function then(){
+		console.log('to process discovery'); 
 		process_discovery(this); 
-	}); 
+	}, function timeout(){
+		console.log('wait for selector time out'); 
+	}, 10000); 
 }); 
 
 casper.run(function() {
@@ -113,6 +147,7 @@ casper.run(function() {
 		console.log('\t' + record[i]);
 	}
 */
+
 	console.log(cusip + ' done;'); 
 	fs.write(path, JSON.stringify(record), 'w'); 		
  
