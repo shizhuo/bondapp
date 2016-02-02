@@ -1,6 +1,11 @@
 var fs = require('fs'); 
 var moment = require('moment'); 
 var casper = require('casper').create({
+		waitTimeout: 10000,
+		stepTimeout: 10000,
+		onStepTimeout: function(){
+			console.log('step time out'); 
+		},
     pageSettings: {
         webSecurityEnabled: false
     }
