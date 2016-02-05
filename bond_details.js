@@ -15,8 +15,8 @@ var casper = require('casper').create({
 		stepTimeout: 10000,
 		onStepTimeout: function(){
 			console.log('step time out');
-			process_next(this); 
-			//wait_to_process_next(this);
+			//process_next(this); 
+			wait_to_process_next(this);
 			//done = true; 	 
 		},
     pageSettings: {
