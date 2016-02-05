@@ -7,6 +7,7 @@ try{
 }catch (e){
 	console.log(e, 'child process error'); 
 }
+var working = false; 
 var done = false; 
  
 var casper = require('casper').create({
@@ -14,7 +15,9 @@ var casper = require('casper').create({
 		stepTimeout: 10000,
 		onStepTimeout: function(){
 			console.log('step time out');
-			process_next(this); 
+			//process_next(this); 
+			//wait_to_process_next(this);
+			done = true; 	 
 		},
     pageSettings: {
         webSecurityEnabled: false
@@ -137,11 +140,15 @@ function process_next(casper){
 		return; 
 	}
 	done = false;
-	casper.then(function(){ 
+	
+	casper.then(function(){
+		console.log('start executing');  
 		childprocess.execFile('./get_next_cusip.sh', [], null, function(error, stdout, stderr){
+			working = true; 
 			if (error){
 				console.log('err: ' + error); 
 				done = true;  
+				working = false; 
 			}else {
 				cusip = stdout;
 				cusip = cusip.trim();  
@@ -149,17 +156,19 @@ function process_next(casper){
 				if (cusip == '') {
 					console.log('cusip is empty'); 
 					done = true; 
+					working = false; 
 					return; 
 				}
 				console.log('cusip = ' + cusip + ' retrieved;'); 
 				detail_url = 'http://emma.msrb.org/SecurityDetails/TradeActivity/' + cusip; 
-				discovery_url = 'http://emma.msrb.org/TradeData/PriceDiscovery/' + cusip; 
+				discovery_url = 'http://emma.msrb.org/TradeData/PriceDiscovery/' + cusip;
 				casper.thenOpen(detail_url, function(){
 					this.waitForText('Security Details', function then(){
 						process_details(this, cusip); 
 					}, function timeout(){
 						console.log('wait for text timeout'); 
 						done = true; 
+						working = false; 
 					}, 10000); 
 				});
 				casper.thenOpen(discovery_url, function(){
@@ -168,17 +177,62 @@ function process_next(casper){
 					}, function timeout(){
     				console.log('wait for selector timeout'); 
 						done = true; 
+						working = false; 
 					}, 10000);
 				
-				}); 
+				});
 			}
-		}); 
+		});
+		casper.then(function(){
+			casper.wait(500, function(){
+				console.log('wait for finishing'); 
+			}); 
+	
+/*
+			console.log('wait for finishing'); 
+			casper.waitFor(function check(){
+				return !working; 
+			}, function then(){
+				console.log('finished'); 	
+			}, function timeout(){
+				console.log('time out here'); 
+			}, 1000); 
+*/
+
+		});  
+ 
 	}); 
-	wait_to_process_next(casper); 
+	casper.then(function(){
+		wait_to_process_next(casper); 
+	}); 
 
 }
 
 function wait_to_process_next(casper){
+	console.log('waiting'); 
+	casper.waitFor(function check(){
+		return done; 
+	}, function then(){
+		if (cusip != undefined){
+			path = get_path(cusip); 
+			console.log(JSON.stringify(record));
+			fs.write(path, JSON.stringify(record), 'w');  
+			var end = moment(); 
+			var diff = end.diff(start); 
+			console.log('spent ' + diff/1000 + ' seconds'); 
+		}
+		process_next(casper); 			 
+	}, function timeout(){
+		wait_to_process_next(casper); 
+	}, 1000); 
+
+
+}
+
+
+/*
+function wait_to_process_next(casper){
+	console.log('start waiting'); 
 	casper.waitFor(function check(){
 		return done; 
 	}, function then(){
@@ -198,6 +252,7 @@ function wait_to_process_next(casper){
 
 
 }
+*/
 
 
 casper.start(start_url, function() {
