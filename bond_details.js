@@ -15,9 +15,9 @@ var casper = require('casper').create({
 		stepTimeout: 10000,
 		onStepTimeout: function(){
 			console.log('step time out');
-			//process_next(this); 
+			process_next(this); 
 			//wait_to_process_next(this);
-			done = true; 	 
+			//done = true; 	 
 		},
     pageSettings: {
         webSecurityEnabled: false
@@ -120,13 +120,17 @@ function process_details(casper, cusip){
 		}
 	}
 
-	var issuer = []; 
-	values = casper.getElementsInfo('div.issuerLinksContainer li a.fullName');
- 
-
-	for (i = 0; i < values.length; i++){
-		var v = values[i].attributes.help; 
-		issuer.push(v); 
+	var issuer = [];
+	try{ 
+		values = casper.getElementsInfo('div.issuerLinksContainer li a.fullName');
+   
+  
+		for (i = 0; i < values.length; i++){
+			var v = values[i].attributes.help; 
+			issuer.push(v); 
+		}
+	}catch(e){
+		console.log(e); 
 	}
 	record.issuer = issuer; 
 
