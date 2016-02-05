@@ -194,7 +194,7 @@ function wait_to_process_next(casper){
 	}, function timeout(){
 		console.log('timeout');
 		process_next(casper);  
-	}, 10000); 
+	}, 20000); 
 
 
 }
