@@ -84,7 +84,7 @@ function process_discovery(casper, cusip){
 		}, function timeout(){
 			console.log('timeout');
 			done = true; 
-	}, 5000);
+	}, 50000);
 
  
 }
