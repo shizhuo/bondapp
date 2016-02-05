@@ -10,8 +10,8 @@ try{
 var done = false; 
  
 var casper = require('casper').create({
-		waitTimeout: 10000,
-		stepTimeout: 10000,
+		waitTimeout: 100000,
+		stepTimeout: 100000,
 		onStepTimeout: function(){
 			console.log('step time out');
 			process_next(this); 
@@ -160,7 +160,7 @@ function process_next(casper){
 					}, function timeout(){
 						console.log('wait for text timeout'); 
 						done = true; 
-					}, 10000); 
+					}, 100000); 
 				});
 				casper.thenOpen(discovery_url, function(){
 					this.waitForSelector('input#searchButton', function then(){
@@ -168,7 +168,7 @@ function process_next(casper){
 					}, function timeout(){
     				console.log('wait for selector timeout'); 
 						done = true; 
-					}, 10000);
+					}, 100000);
 				
 				}); 
 			}
@@ -194,7 +194,7 @@ function wait_to_process_next(casper){
 	}, function timeout(){
 		console.log('timeout');
 		process_next(casper);  
-	}, 5000); 
+	}, 50000); 
 
 
 }
@@ -209,7 +209,7 @@ casper.start(start_url, function() {
 	}, function timeout(){
 		console.log('wait for text timeout'); 
 		this.exit(); 
-	}, 10000);
+	}, 100000);
 
 	wait_to_process_next(casper); 
  
