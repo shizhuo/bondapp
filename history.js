@@ -281,7 +281,7 @@ casper.start('http://emma.msrb.org/TradeData/Search', function() {
 		}, function timeout(){
 			console.log('waitUntilVisible time out');
 			this.exit();  
-		}, 10000);  
+		}, 100000);  
 	
 	}); 
 });
