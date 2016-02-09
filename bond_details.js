@@ -136,7 +136,9 @@ function process_details(casper, cusip){
 
 }
 
+var count = 0; 
 function process_next(casper){
+	count=0; 
 	console.log('================'); 
 	start = moment();
 	if (!childprocess) {
@@ -213,6 +215,10 @@ function process_next(casper){
 }
 
 function wait_to_process_next(casper){
+	count++;
+	if (count >= 10) {
+		process_next(casper);  
+	}
 	console.log('waiting'); 
 	casper.waitFor(function check(){
 		return done; 
