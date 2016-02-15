@@ -28,9 +28,12 @@ create table cusip(
 create table history(
 	cusip varchar(50), 
 	trade_dt datetime, 
+	desc varchar(200),
+	maturity_date date, 
+	interest_rate float, 
 	price float, 
 	yield float, 
-	trade_amount int, 
+	amount int, 
 	type varchar(30), 
 	special_condition varchar(200),
 	foreign key(cusip) references cusip(cusip)

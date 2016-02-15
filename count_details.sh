@@ -10,8 +10,9 @@ do
 			for d4 in $d3/*
 			do
 				count=$((count+1))
-				echo $count
+				#echo $count
 			done
 		done
 	done
 done
+echo $count
