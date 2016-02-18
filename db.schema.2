@@ -1,0 +1,15 @@
+create table history(
+	cusip varchar(50),
+	state varchar(2), 
+	description varchar(500), 
+	trade_dt datetime, 
+	maturity_date date, 
+	interest_rate float, 
+	price float, 
+	yield float, 
+	amount int, 
+	type varchar(30), 
+	special_condition varchar(200)
+) ENGINE=InnoDB; 
+
+
