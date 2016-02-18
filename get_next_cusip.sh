@@ -1,4 +1,4 @@
 #!/bin/bash
 
-cusip=$(redis-cli -h proliant lpop cusip)
+cusip=$(redis-cli lpop cusip)
 echo $cusip
